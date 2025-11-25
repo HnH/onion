@@ -65,10 +65,6 @@ func (self *application) init() (err error) {
 		}
 	}
 
-	//if err = self.container.Implementation(self.logger); err != nil {
-	//	return
-	//}
-
 	return self.layers.initialize(self.context)
 }
 
