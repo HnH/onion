@@ -1,10 +1,9 @@
 module github.com/HnH/onion
 
-go 1.17
+go 1.21
 
 require (
 	github.com/HnH/di v1.2.3
-	github.com/rs/zerolog v1.25.0
 	github.com/stretchr/testify v1.7.0
 )
 

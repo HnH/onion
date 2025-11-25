@@ -2,12 +2,12 @@ package onion
 
 import (
 	"context"
+	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
 
 	"github.com/HnH/di"
-	"github.com/rs/zerolog"
 )
 
 // Application interface
@@ -32,7 +32,6 @@ func New(ctx context.Context, options ...Option) Application {
 type application struct {
 	context    context.Context
 	container  di.Container
-	logger     zerolog.Logger
 	providers  []di.Provider
 	layers     layers
 	chanSignal chan os.Signal
@@ -41,11 +40,6 @@ type application struct {
 // SetContainer sets container for Application
 func (self *application) SetContainer(container di.Container) {
 	self.container = container
-}
-
-// SetLogger sets logger for Application
-func (self *application) SetLogger(log zerolog.Logger) {
-	self.logger = log
 }
 
 // SetProviders sets providers for di.Container
@@ -71,9 +65,9 @@ func (self *application) init() (err error) {
 		}
 	}
 
-	if err = self.container.Implementation(self.logger); err != nil {
-		return
-	}
+	//if err = self.container.Implementation(self.logger); err != nil {
+	//	return
+	//}
 
 	return self.layers.initialize(self.context)
 }
@@ -84,21 +78,21 @@ func (self *application) Listen() (err error) {
 		return
 	}
 
-	self.logger.Info().Msg("application instance started")
+	slog.Info("application instance started")
 
 	signal.Notify(self.chanSignal, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 
 	var sig = <-self.chanSignal
 
-	self.logger.Info().Str("SIGNAL", sig.String()).Msg("process termination signal received")
+	slog.Info("process termination signal received", slog.String("SIGNAL", sig.String()))
 
-	if err := self.layers.shutdown(self.context); err != nil {
-		self.logger.Error().Err(err)
+	if err = self.layers.shutdown(self.context); err != nil {
+		slog.Error(err.Error())
 	}
 
 	signal.Stop(self.chanSignal)
 
-	self.logger.Info().Msg("application instance terminated")
+	slog.Info("application instance terminated")
 
 	return
 }
