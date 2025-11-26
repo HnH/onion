@@ -9,9 +9,6 @@ import (
 	slogzerolog "github.com/samber/slog-zerolog/v2"
 )
 
-var New = zerolog.New
-var NewConsoleWriter = zerolog.NewConsoleWriter
-
 func NewProvider(zlog zerolog.Logger, options ...Option) di.Provider {
 	var p = &Provider{
 		log: zlog,
@@ -65,8 +62,9 @@ func (p *Provider) Provide(container di.Container) (err error) {
 	var (
 		zlogger = p.log.Level(p.getZerologLevel())
 		slogger = slog.New(slogzerolog.Option{
-			Level:  p.getSlogLevel(),
-			Logger: &zlogger,
+			Level:       p.getSlogLevel(),
+			Logger:      &zlogger,
+			NoTimestamp: true,
 		}.NewZerologHandler())
 	)
 
@@ -83,5 +81,5 @@ func (p *Provider) Provide(container di.Container) (err error) {
 		zerolog.DefaultContextLogger = &zlogger
 	}
 
-	return nil
+	return
 }
