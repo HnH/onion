@@ -2,7 +2,6 @@ package onion
 
 import (
 	"github.com/HnH/di"
-	"github.com/rs/zerolog"
 )
 
 // Option represents single option type
@@ -11,7 +10,6 @@ type Option func(Options)
 // Options represents a target for applying an Option
 type Options interface {
 	SetContainer(di.Container)
-	SetLogger(zerolog.Logger)
 	SetProviders(...di.Provider)
 	SetLayers(...Layer)
 }
@@ -20,13 +18,6 @@ type Options interface {
 func WithContainer(container di.Container) Option {
 	return func(o Options) {
 		o.SetContainer(container)
-	}
-}
-
-// WithLogger creates  a logger Option
-func WithLogger(log zerolog.Logger) Option {
-	return func(o Options) {
-		o.SetLogger(log)
 	}
 }
 

@@ -2,13 +2,11 @@ package onion
 
 import (
 	"context"
-	"os"
 	"syscall"
 	"testing"
 	"time"
 
 	"github.com/HnH/di"
-	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/suite"
 
 	"github.com/HnH/onion/internal/mocks"
@@ -29,20 +27,17 @@ func (suite *ApplicationSuite) TestNew() {
 
 func (suite *ApplicationSuite) TestNewOptions() {
 	var (
-		log = zerolog.New(os.Stdout)
 		cnt = di.NewContainer()
 		cfg = &mocks.Provider{ID: "something"}
 		lay = &mocks.Layer{ID: "infra"}
 		app = New(
 			context.Background(),
-			WithLogger(log),
 			WithContainer(cnt),
 			WithProviders(cfg),
 			WithLayers(lay),
 		).(*application)
 	)
 
-	suite.Require().Equal(app.logger, log)
 	suite.Require().Equal(app.container, cnt)
 	suite.Require().Equal(len(app.providers), 1)
 	suite.Require().Equal(app.providers[0], cfg)

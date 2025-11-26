@@ -2,10 +2,10 @@ package onion
 
 import (
 	"context"
+	"log/slog"
 	"reflect"
 
 	"github.com/HnH/di"
-	"github.com/rs/zerolog"
 )
 
 // Layer is an Application layer abstraction
@@ -21,13 +21,7 @@ type Shutdowner interface {
 type layers []Layer
 
 func (lrs layers) initialize(ctx context.Context) (err error) {
-	var log zerolog.Logger
-	if err = di.Ctx(ctx).Resolver().Resolve(&log); err != nil {
-		return
-	}
-
-	// Initialize application layers
-	log.Info().Msgf("starting to initialize %d layer(s)", len(lrs))
+	slog.Info("starting to initialize layers", slog.Int("layers", len(lrs)))
 
 	for _, l := range lrs {
 		if err = l.Initialize(ctx); err != nil {
@@ -40,37 +34,32 @@ func (lrs layers) initialize(ctx context.Context) (err error) {
 			}
 		}
 
-		log.Info().Msgf("%s layer initialized", reflect.TypeOf(l).String())
+		slog.Info("layer initialized", slog.String("layer", reflect.TypeOf(l).String()))
 	}
 
-	log.Info().Msgf("all layers successfully initialized")
+	slog.Info("all layers successfully initialized", slog.Int("layers", len(lrs)))
 
 	return
 }
 
 func (lrs layers) shutdown(ctx context.Context) (err error) {
-	var log zerolog.Logger
-	if err = di.Ctx(ctx).Resolver().Resolve(&log); err != nil {
-		return
-	}
-
-	log.Info().Msgf("starting to gracefully shut down %d layer(s)", len(lrs))
+	slog.Info("starting to gracefully shut down layers", slog.Int("layers", len(lrs)))
 
 	// Loop and close layers in reversed order
 	for n := len(lrs) - 1; n >= 0; n-- {
 		if t, ok := lrs[n].(Shutdowner); ok {
 			for err = range t.Shutdown() {
 				if err != nil {
-					log.Error().Err(err).Send()
+					slog.Error(err.Error())
 				}
 			}
 		}
 
-		log.Info().Msgf("%s layer gracefully shut down", reflect.TypeOf(lrs[n]).String())
+		slog.Info("layer gracefully shut down", slog.String("layer", reflect.TypeOf(lrs[n]).String()))
 		lrs = lrs[:n] // pop
 	}
 
-	log.Info().Msgf("all layers gracefully shut down")
+	slog.Info("all layers gracefully shut down")
 
 	return
 }
